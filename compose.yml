@@ -7,10 +7,28 @@ services:
       - ./data:/app/data
     ports:
       - "7860:7860"
+    environment:
+      # Optional: Set authentication credentials
+      # SHARP_AUTH_USERNAME: "admin"
+      # SHARP_AUTH_PASSWORD: "changeme"
+      # Optional: Configure limits
+      # SHARP_MAX_FILE_SIZE_MB: "50"
+      # SHARP_PORT: "7860"
+      - NVIDIA_VISIBLE_DEVICES=all
     deploy:
       resources:
+        limits:
+          cpus: "8"
+          memory: 32G
         reservations:
           devices:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
